@@ -231,7 +231,7 @@ man_pages = [
 texinfo_documents = [
     ('index', 'PHM08_data_science', u'project_name Documentation',
      u"Navar M. M. Nascimento", 'project_name',
-     'A framework for analyses in the prognosis dataset PHM08 provided by NASA. This project is part of my Master's degree thesis.', 'Miscellaneous'),
+     'A framework for analyses in the prognosis dataset PHM08 provided by NASA.'),
 ]
 
 # Documents to append as an appendix to all manuals.
