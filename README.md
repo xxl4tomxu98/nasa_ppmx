@@ -1,7 +1,7 @@
 Fault Prognosis for Aircraft's Turbofan Engines
 ==============================
 
-A framework for analyses in the prognosis dataset PHM08 provided by NASA. This project is part of my Master's degree thesis.
+A framework for analyses in the prognosis dataset PHM08 provided by NASA.
 
 Project Organization
 ------------
@@ -53,5 +53,3 @@ Project Organization
 
 
 --------
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
