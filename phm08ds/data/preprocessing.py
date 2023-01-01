@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.cluster import KMeans
+from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
 """ 
 ######################################################################################
@@ -120,7 +121,7 @@ class OperationalCondition(BaseEstimator, TransformerMixin):
         """
         kmeans = KMeans(n_clusters=6)
         kmeans.cluster_centers_ = self.op_centers
-
+        kmeans._n_threads = _openmp_effective_n_threads()
         operational_readings = np.array(X[['operational_setting_1', 'operational_setting_2', 'operational_setting_3']])
 
         if operational_readings.ndim == 1:
@@ -129,6 +130,7 @@ class OperationalCondition(BaseEstimator, TransformerMixin):
         operational_conditions = kmeans.predict(operational_readings) + 1
     
         return operational_conditions
+
 
 class Data_per_op_cond(BaseEstimator, TransformerMixin):
 
@@ -141,14 +143,17 @@ class Data_per_op_cond(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X.loc[X['Operational_condition'] == self.operational_condition]
 
+
 class SensorReadings(BaseEstimator, TransformerMixin):
 
     def fit(self, X):
         return self
+
     def transform(self, X):
         return X.drop(labels=['unit', 'time_step', 'operational_setting_1', 
                         'operational_setting_2', 'operational_setting_3', 
                         'Operational_condition'], axis=1)
+
 
 class HealthState(BaseEstimator, TransformerMixin):      
 
@@ -158,23 +163,18 @@ class HealthState(BaseEstimator, TransformerMixin):
     def fit(self, X):
         return self
 
-    def transform(self, X):
-        
-        t_max = X.groupby(['unit']).count()['time_step']
-        
+    def transform(self, X):        
+        t_max = X.groupby(['unit']).count()['time_step']        
         health_states_unit = []
         for (t_max_unit, df_unit) in zip(t_max, X.groupby(['unit'])):
             buffer = df_unit[1]['time_step'].apply(check_time_step, tmax=t_max_unit)
             health_states_unit.append(buffer.ravel())
-
         health_states = []
         for i in health_states_unit:
             for j in i:
-                health_states.append(j)
-        
+                health_states.append(j)        
         Y = X.copy()
         Y['Health_state'] = health_states
-
         return Y
 
 
