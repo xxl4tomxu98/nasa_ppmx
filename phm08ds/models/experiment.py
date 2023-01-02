@@ -80,15 +80,13 @@ def results_clf(n_classes, y_true, y_pred):
                 for j in range(n_classes):
                     fpr[j], tpr[j], _ = metrics.roc_curve(hot1_true[:, j], hot1_pred[:, j])
                     roc_auc[j] = metrics.auc(fpr[j], tpr[j])
-
                 ROC_buffer['roc']['fpr'].append(fpr)
                 ROC_buffer['roc']['tpr'].append(tpr)                
                 ROC_buffer['roc_auc'].append(roc_auc)                
                 #results[key]['roc'][i] = ROC
                 #results[key]['roc_auc'][i] = roc_auc    
             results[key].update(ROC_buffer)
-            results[key]['average'] = average_performance(results[key]) 
-            
+            results[key]['average'] = average_performance(results[key])            
             metrics_confmat = metrics_confMat(results[key]['average']['confMat'])
             results[key]['class'] = metrics_confmat['class']            
     return results
@@ -129,11 +127,8 @@ def metrics_confMat(confMat):
         metrics_class[i,4] = (2*metrics_class[i,1]*metrics_class[i,0])/(metrics_class[i,1] + metrics_class[i,0])
         # ACC:
         metrics_class[i,5] = TP/(confMat[i,:].sum())
-
     metrics_class[np.isnan(metrics_class)] = 0
-
-    metrics_overall = metrics_class.sum(axis=0)/metrics_class.shape[0]
-    
+    metrics_overall = metrics_class.sum(axis=0)/metrics_class.shape[0]    
     metrics['overall'] = metrics_overall
     metrics['class']['spe'] = metrics_class[:,0]
     metrics['class']['sen'] = metrics_class[:,1]
@@ -174,8 +169,7 @@ def ROC_curves(results, foldername):
     # local defs:
     # plt.style.use('../utils/seaborn-poster__navar.mplstyle')
     #colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'deeppink', 'navy'])
-    lw = 5
-    
+    lw = 5    
     # iterate over classifiers:
     for clf in results: 
         # iterate over each fold:
@@ -188,16 +182,14 @@ def ROC_curves(results, foldername):
             for i in range(len(fpr)):
                 plt.plot(fpr[i], tpr[i], lw=lw,
                          label='ROC curve of class {0} (area = {1:0.2f})'
-                         ''.format(i, roc_auc[i]))
-            
+                         ''.format(i, roc_auc[i]))            
             plt.plot([0, 1], [0, 1], 'k--', lw=lw)
             plt.xlim([0.0, 1.0])
             plt.ylim([0.0, 1.05])
             plt.xlabel('False Positive Rate')
             plt.ylabel('True Positive Rate')
             #plt.title('Some extension of Receiver operating characteristic to multi-class')
-            plt.legend(loc="lower right")
-            
+            plt.legend(loc="lower right")            
             full_path = os.path.join(foldertree, foldername, 'ROC')
             check_folder(os.path.join(foldertree, foldername),'ROC')
             figName = os.path.join(full_path, 'ROC__' + clf + 'Fold_' + str(folds) + '.pdf')
@@ -229,21 +221,18 @@ def results_to_csv(results, foldername):
                                                                 'Result_' + clf + '_' + 'AVG_%%_' + 'confMat' + '.csv'))
                 # STD confusion matrix
                 pd.DataFrame(results[clf]['average']['confMat_std']).to_csv(os.path.join(foldertree, 
-                                                                                     foldername,
+                                                                                         foldername,
                                                                                      'Result_' + clf + '_' + 'STD_' + 'confMat' + '.csv'))
                 confMat_buffer = percentage_confMat(results[clf]['average']['confMat_std'])
                 pd.DataFrame(confMat_buffer).to_csv(os.path.join(foldertree, 
-                                                                foldername,
-                                                                'Result_' + clf + '_' + 'STD_%%_' + 'confMat' + '.csv'))
-                
+                                                                 foldername,
+                                                                 'Result_' + clf + '_' + 'STD_%%_' + 'confMat' + '.csv'))                
             if not (metric == 'confMat' or metric == 'confMat_std'):
                 others[metric] = results[clf][metric]
-
         output = pd.DataFrame(others)
         output.loc['average'] = output.mean()
         output.loc['std'] = output.std()
-        output.to_csv(os.path.join(foldertree, foldername, 'Result_' + clf + '_' + 'metrics.csv'))
-        
+        output.to_csv(os.path.join(foldertree, foldername, 'Result_' + clf + '_' + 'metrics.csv'))        
         output_class = pd.DataFrame(results[clf]['class'])
         output_class.to_csv(os.path.join(foldertree, foldername, 'Result_' + clf + '_AVG_Class_' + 'metrics.csv'))
 
