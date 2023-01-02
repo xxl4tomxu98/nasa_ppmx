@@ -12,10 +12,8 @@ import os
 from itertools import cycle
 
 #################################### Run classifiers: ##########################
-def run_classifiers(X, y, classifiers, cv):
-   
-    skf = StratifiedKFold(n_splits=cv)
-    
+def run_classifiers(X, y, classifiers, cv):   
+    skf = StratifiedKFold(n_splits=cv)    
     # define local variables:
     y_train_pred = dict((k, []) for k in classifiers.keys())
     y_test_pred = dict((k, []) for k in classifiers.keys())
@@ -26,60 +24,46 @@ def run_classifiers(X, y, classifiers, cv):
                         'pred': {}},
               'test': {'true': {},
                         'pred': {}}
-             }
-                
+             }                
     # iterate over dataset
     for train_idx, test_idx in skf.split(X, y):
         # split data into kfolds:
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
-
         # Fit the model(s):
         # iterate over classifiers:
         for clf_name, clf in classifiers.items():
             clf.fit(X_train, y_train)
-
             # Append model(s) predictions:
             y_train_pred[clf_name].append(clf.predict(X_train))
             y_test_pred[clf_name].append(clf.predict(X_test))
-
             # Append model(s) labels:
             y_train_true[clf_name].append(y_train)
-            y_test_true[clf_name].append(y_test) 
-            
+            y_test_true[clf_name].append(y_test)            
             classifiers[clf_name] = clf
-
     output['train']['true'] = y_train_true 
     output['train']['pred'] = y_train_pred
     output['test']['true'] = y_test_true 
-    output['test']['pred'] = y_test_pred
-    
+    output['test']['pred'] = y_test_pred    
     return output
 
 #################################### Performance assessement: ##########################
 
-
-
 def results_clf(n_classes, y_true, y_pred):
-
     metrics_keys =  {'confMat': [], 'acc': [], 'recall': [], 'precision': [], 
                      'f1': [], 'roc': {}, 'roc_auc': {},
                      'class': {}}
-
-    results = dict((k, []) for k in y_true.keys())
-    
+    results = dict((k, []) for k in y_true.keys())    
     for key in y_true:
             ROC_buffer = {'roc':{'fpr': [], 'tpr': []},
                   'roc_auc': []}
-            results[key] = dict((k, []) for k in metrics_keys.keys())
-            
+            results[key] = dict((k, []) for k in metrics_keys.keys())            
             for i in range(0,len(y_true[key])):
                 results[key]['confMat'].append(metrics.confusion_matrix(y_true[key][i], y_pred[key][i]))
                 results[key]['acc'].append(metrics.accuracy_score(y_true[key][i], y_pred[key][i]))
                 results[key]['recall'].append(metrics.recall_score(y_true[key][i], y_pred[key][i], average='weighted'))
                 results[key]['precision'].append(metrics.precision_score(y_true[key][i], y_pred[key][i], average='weighted'))
                 results[key]['f1'].append(metrics.f1_score(y_true[key][i], y_pred[key][i], average='weighted'))
-
                 # ROC curves for each class:
                 fpr = dict()
                 tpr = dict()
@@ -88,7 +72,6 @@ def results_clf(n_classes, y_true, y_pred):
                 hot_2 = OneHotEncoder()
                 hot1_true = hot_1.fit_transform(y_true[key][i].reshape(-1,1)).toarray()
                 hot1_pred = hot_2.fit_transform(y_pred[key][i].reshape(-1,1)).toarray()
-
                 # check if hot1_true and hot1_pred have the same shape:
                 if not hot1_pred.shape == hot1_true.shape:
                     value_target = hot1_true.shape[1]
@@ -99,26 +82,22 @@ def results_clf(n_classes, y_true, y_pred):
                     roc_auc[j] = metrics.auc(fpr[j], tpr[j])
 
                 ROC_buffer['roc']['fpr'].append(fpr)
-                ROC_buffer['roc']['tpr'].append(tpr)
-                
-                ROC_buffer['roc_auc'].append(roc_auc)
-                
+                ROC_buffer['roc']['tpr'].append(tpr)                
+                ROC_buffer['roc_auc'].append(roc_auc)                
                 #results[key]['roc'][i] = ROC
-                #results[key]['roc_auc'][i] = roc_auc
-    
+                #results[key]['roc_auc'][i] = roc_auc    
             results[key].update(ROC_buffer)
             results[key]['average'] = average_performance(results[key]) 
             
             metrics_confmat = metrics_confMat(results[key]['average']['confMat'])
-            results[key]['class'] = metrics_confmat['class']
-            
+            results[key]['class'] = metrics_confmat['class']            
     return results
+
 
 def average_performance(results):
     metrics_keys = {'confMat': [], 'acc': [], 'recall': [], 'precision': [], 
                     'f1': []}
-    results_avg = {}
-    
+    results_avg = {}    
     results_avg = metrics_keys 
     results_avg['confMat'] =  np.mean(results['confMat'], axis=0)
     results_avg['confMat_std'] =  np.std(results['confMat'], axis=0)
@@ -126,21 +105,18 @@ def average_performance(results):
     results_avg['recall'] =  np.mean(results['recall'])
     results_avg['precision'] =  np.mean(results['precision'])
     results_avg['f1'] =  np.mean(results['f1'])
-
     return results_avg
     
 
 def metrics_confMat(confMat):
     metrics = {'overall': [], 'class': {'spe': [], 'sen': [], 'ppv': [], 'fsc': [], 'hm': [], 'acc': []}}
     #confMat = np.transpose(confMat)
-
     metrics_class = np.zeros((confMat.shape[0], 6))
     for i in range(0,confMat.shape[0]):
         TP = confMat[i,i]
-        TN = np.trace(confMat) - TP;
-        FP = confMat[:,i].sum() - TP;
-        FN = confMat[i,:].sum() - TP;
-
+        TN = np.trace(confMat) - TP
+        FP = confMat[:,i].sum() - TP
+        FN = confMat[i,:].sum() - TP
         # SPECIFICITY
         metrics_class[i,0] = TN / (TN + FP) 
         # SENSITIVITY
@@ -152,7 +128,7 @@ def metrics_confMat(confMat):
         # HM:
         metrics_class[i,4] = (2*metrics_class[i,1]*metrics_class[i,0])/(metrics_class[i,1] + metrics_class[i,0])
         # ACC:
-        metrics_class[i,5] = TP/(confMat[i,:].sum());
+        metrics_class[i,5] = TP/(confMat[i,:].sum())
 
     metrics_class[np.isnan(metrics_class)] = 0
 
@@ -164,42 +140,35 @@ def metrics_confMat(confMat):
     metrics['class']['ppv'] = metrics_class[:,2]
     metrics['class']['fsc'] = metrics_class[:,3]
     metrics['class']['hm'] = metrics_class[:,4]
-    metrics['class']['acc'] = metrics_class[:,5]
-    
+    metrics['class']['acc'] = metrics_class[:,5]    
     return metrics   
 
 #################################### Save models: ##########################
 
-
 def save_models(classifiers, name='classifiers'):
     foldertree = 'Results'
-    foldername = 'models'
-    
-    check_folder(foldertree, foldername)
-        
+    foldername = 'models'    
+    check_folder(foldertree, foldername)        
     joblib.dump(classifiers, os.path.join(foldertree, foldername, name + '.pkl')) 
-    
+
+
 def save_pipeline(pipeline):
     foldertree = 'Results'
     foldername = 'models'
-    
-    check_folder(foldertree, foldername)
-        
-    joblib.dump(pipeline, os.path.join(foldertree, foldername, 'pipeline.pkl')) 
-
+    check_folder(foldertree, foldername)        
+    joblib.dump(pipeline, os.path.join(foldertree, foldername, 'pipeline.pkl'))
     
 #################################### Export_results: ##########################
-
 
 def export_results(results, foldername):
     import os
     cwd = os.getcwd()
-    print(cwd)
-    
+    print(cwd)    
     results_to_csv(results, foldername)  
     ROC_curves(results, foldername)
     return None
-    
+
+
 def ROC_curves(results, foldername):
     foldertree = 'Results'
     # local defs:
@@ -238,18 +207,12 @@ def ROC_curves(results, foldername):
     return None
 
 
-def results_to_csv(results, foldername):
-    
-    # create a results folder:
-    
-    foldertree = 'Results'
-    
+def results_to_csv(results, foldername):    
+    # create a results folder:    
+    foldertree = 'Results'    
     check_folder(foldertree, foldername)
-
     # Save results variable
-    joblib.dump(results, os.path.join(foldertree, foldername, 'results.pkl'))        
-    
- 
+    joblib.dump(results, os.path.join(foldertree, foldername, 'results.pkl'))  
     # for each classifier:
     others = {}
     for clf in results.keys():
@@ -287,6 +250,7 @@ def results_to_csv(results, foldername):
         
 def percentage_confMat(confMat):
     return np.around((confMat / np.sum(confMat,axis=1)[:,None])*100,2)
+
 
 def check_folder(foldertree, foldername):
     #foldertree = 'Results'
