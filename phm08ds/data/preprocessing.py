@@ -9,7 +9,6 @@ from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 Global functions definitions: 
 ######################################################################################
 """
-
 def check_time_step(t, tmax):
     if abs(t - tmax) >= 200:
         return 1
@@ -19,16 +18,13 @@ def check_time_step(t, tmax):
         return 3
     elif abs(t - tmax) <= 50:
         return 4
-
 """ 
 ######################################################################################
 Classes definitions: 
 ######################################################################################
 """
-
 class Data_per_unit(BaseEstimator, TransformerMixin):
     """ Recieves a pandas dataframe containg data and returns a dataframe with the data for the specified unit.
-
     Parameters
     ----------
     unit: int, default 1
@@ -36,9 +32,7 @@ class Data_per_unit(BaseEstimator, TransformerMixin):
         - A number from 1 to 357 in 'train';
         - A number from 1 to 364 in 'test';
         - A number from 1 to 298 in 'final_test'.
-
     """
-
     def __init__(self, unit=1):
         """ Return the object with the unit to select from data """
         self.unit = unit
@@ -51,16 +45,14 @@ class Data_per_unit(BaseEstimator, TransformerMixin):
         """ auheuhaeh """
         return X[X['unit'] == self.unit]
 
+
 class Data_per_sensor(BaseEstimator, TransformerMixin):
     """ Recieves a pandas dataframe containg data and returns a dataframe with the data for the specified unit.
-
     Parameters
     ----------
     sensor: int, default 1
         Sensor varies from 1 to 20.
-
     """
-
     def __init__(self, sensor=1):
         """ Return the object with the unit to select from data """
         self.sensor = sensor
@@ -70,8 +62,7 @@ class Data_per_sensor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """ auheuhaeh """
-        
+        """ auheuhaeh """        
         return X[['unit', 'time_step',
                   'operational_setting_1', 'operational_setting_2', 'operational_setting_3', 
                    'Sensor_' + str(self.sensor)]]
@@ -80,12 +71,10 @@ class Data_per_sensor(BaseEstimator, TransformerMixin):
 class OperationalCondition(BaseEstimator, TransformerMixin):
     """ Recieves a pandas dataframe containg data and returns a dataframe with the data clustered and labeled
         to operational conditions.
-
     Parameters
     ----------
     None
     """
-
     def __init__(self):
         """ Return the object with the unit to select from data """
         self.sensors = 26
@@ -95,7 +84,6 @@ class OperationalCondition(BaseEstimator, TransformerMixin):
         #                             [ 4.20030440e+01,  8.40510423e-01,  4.00000000e+01],
         #                             [ 2.50030126e+01,  6.20516407e-01,  8.00000000e+01],
         #                             [ 2.00029465e+01,  7.00497164e-01, -7.13384907e-12]])
-
         self.op_centers = np.array([[10.01, 0.2511, 20],
                                     [20, 0.702, 0],
                                     [0.0024, 0.001, 100],
@@ -107,8 +95,7 @@ class OperationalCondition(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """ Cluster the operational conditons of PHM08 dataset according to Wang et al (2008).
-        
+        """ Cluster the operational conditons of PHM08 dataset according to Wang et al (2008).        
         Parameters
         ----------
         X: data.
@@ -127,13 +114,11 @@ class OperationalCondition(BaseEstimator, TransformerMixin):
         if operational_readings.ndim == 1:
             operational_readings = operational_readings.reshape(1,-1)
 
-        operational_conditions = kmeans.predict(operational_readings) + 1
-    
+        operational_conditions = kmeans.predict(operational_readings) + 1    
         return operational_conditions
 
 
 class Data_per_op_cond(BaseEstimator, TransformerMixin):
-
     def __init__(self, operational_condition=1):
         self.operational_condition = operational_condition
 
@@ -145,7 +130,6 @@ class Data_per_op_cond(BaseEstimator, TransformerMixin):
 
 
 class SensorReadings(BaseEstimator, TransformerMixin):
-
     def fit(self, X):
         return self
 
@@ -155,8 +139,7 @@ class SensorReadings(BaseEstimator, TransformerMixin):
                         'Operational_condition'], axis=1)
 
 
-class HealthState(BaseEstimator, TransformerMixin):      
-
+class HealthState(BaseEstimator, TransformerMixin):
     def __init__ (self, kind='Tamilselvan'):
         self.kind = kind
 
@@ -176,10 +159,4 @@ class HealthState(BaseEstimator, TransformerMixin):
         Y = X.copy()
         Y['Health_state'] = health_states
         return Y
-
-
- 
-
-
-
-        
+       

@@ -62,7 +62,7 @@ def results_clf(n_classes, y_true, y_pred):
                 results[key]['confMat'].append(metrics.confusion_matrix(y_true[key][i], y_pred[key][i]))
                 results[key]['acc'].append(metrics.accuracy_score(y_true[key][i], y_pred[key][i]))
                 results[key]['recall'].append(metrics.recall_score(y_true[key][i], y_pred[key][i], average='weighted'))
-                results[key]['precision'].append(metrics.precision_score(y_true[key][i], y_pred[key][i], average='weighted'))
+                results[key]['precision'].append(metrics.precision_score(y_true[key][i], y_pred[key][i], zero_division=True, average='weighted'))
                 results[key]['f1'].append(metrics.f1_score(y_true[key][i], y_pred[key][i], average='weighted'))
                 # ROC curves for each class:
                 fpr = dict()

@@ -12,7 +12,7 @@ def load(type='train'):
     """
     data = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/files/' 
                         + type + '.txt', sep=' ', header=None)
-    data.drop(axis=1, labels=[26,27], inplace=True)
+    data.drop(axis=1, labels=[26, 27], inplace=True)
     
     sensors_list = []
     for k in range(0,21):
