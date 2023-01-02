@@ -120,28 +120,3 @@ figure
 hold on
 plot(Teste_gain(:,1), 'k', 'LineWidth', 2)
 plot(y_gain(:,1), 'r--', 'LineWidth', 2)
-        
-        
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-    
